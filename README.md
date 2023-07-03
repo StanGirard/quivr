@@ -96,14 +96,14 @@ cp .frontend_env.example frontend/.env
 
 > _Your  `JWT_SECRET_KEY`can be found in your supabase settings under Project Settings -> API -> JWT Settings -> JWT Secret_
 
-> _To activate vertexAI with PaLM from GCP follow the instructions [here](https://python.langchain.com/en/latest/modules/models/llms/integrations/google_vertex_ai_palm.html) and update `bacend/.env`- It is an advanced feature, please be expert in GCP before trying to use it_
+> _To activate vertexAI with PaLM from GCP follow the instructions [here](https://python.langchain.com/en/latest/modules/models/llms/integrations/google_vertex_ai_palm.html) and update `backend/.env`- It is an advanced feature, please be expert in GCP before trying to use it_
 
 - [ ] Change variables in `backend/.env`
 - [ ] Change variables in `frontend/.env`
 
 - **Step 4**: Run the following migration scripts on the Supabase database via the web interface (SQL Editor -> `New query`)
 
-[Creation Script 1](scripts/tables.sql)
+[DB Creation Script 1](scripts/tables.sql)
 
 > _If you come from an old version of Quivr, run the scripts in [migration script](scripts/) to migrate your data to the new version in the order of date_
 
@@ -115,7 +115,7 @@ docker compose -f docker-compose.yml up --build
 
 - **Step 6**: Navigate to `localhost:3000` in your browser
 
-- ** Step 7**: Want to contribute to the project? 
+- **Step 7**: Want to contribute to the project? 
 
 ```
 docker compose -f docker-compose.dev.yml up --build
