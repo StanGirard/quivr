@@ -31,7 +31,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
 
 -- Create vectors table
 CREATE TABLE IF NOT EXISTS vectors (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY,
     content TEXT,
     metadata JSONB,
     embedding VECTOR(1536)
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS vectors (
 -- Create function to match vectors
 CREATE OR REPLACE FUNCTION match_vectors(query_embedding VECTOR(1536), match_count INT, p_brain_id UUID)
 RETURNS TABLE(
-    id BIGINT,
+    id UUID,
     brain_id UUID,
     content TEXT,
     metadata JSONB,
@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS stats (
 -- Create summaries table
 CREATE TABLE IF NOT EXISTS summaries (
     id BIGSERIAL PRIMARY KEY,
-    document_id BIGINT REFERENCES vectors(id),
+    document_id UUID REFERENCES vectors(id),
     content TEXT,
     metadata JSONB,
     embedding VECTOR(1536)
@@ -91,8 +91,8 @@ CREATE TABLE IF NOT EXISTS summaries (
 -- Create function to match summaries
 CREATE OR REPLACE FUNCTION match_summaries(query_embedding VECTOR(1536), match_count INT, match_threshold FLOAT)
 RETURNS TABLE(
-    id BIGINT,
-    document_id BIGINT,
+    id UUID,
+    document_id UUID,
     content TEXT,
     metadata JSONB,
     embedding VECTOR(1536),
@@ -151,7 +151,7 @@ CREATE TABLE IF NOT EXISTS brains_users (
 -- Create brains X vectors table
 CREATE TABLE IF NOT EXISTS brains_vectors (
   brain_id UUID,
-  vector_id BIGINT,
+  vector_id UUID,
   file_sha1 TEXT,
   PRIMARY KEY (brain_id, vector_id),
   FOREIGN KEY (vector_id) REFERENCES vectors (id),
