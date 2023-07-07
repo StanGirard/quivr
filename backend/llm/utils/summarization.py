@@ -7,7 +7,13 @@ from logger import get_logger
 logger = get_logger(__name__)
 
 openai_api_key = os.environ.get("OPENAI_API_KEY")
+openai_api_base = os.environ.get("OPENAI_API_BASE", "https://api.openai.com/v1")
+openai_deployment_id = os.environ.get("OPENAI_DEPLOYMENT_ID", None)
+openai_api_type = os.environ.get("OPENAI_API_TYPE", "open_ai")
 openai.api_key = openai_api_key
+openai.api_base = openai_api_base
+openai.api_type = openai_api_type
+openai.deployment_id = openai_deployment_id
 summary_llm = guidance.llms.OpenAI("gpt-3.5-turbo-0613", caching=False)
 
 

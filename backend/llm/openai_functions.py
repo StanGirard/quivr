@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from langchain.chat_models import ChatOpenAI
+from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.embeddings.openai import OpenAIEmbeddings
 from llm.models.FunctionCall import FunctionCall
 from llm.models.OpenAiAnswer import OpenAiAnswer
@@ -47,6 +47,9 @@ class OpenAIFunctionsBrainPicking(BaseBrainPicking):
         max_tokens: int,
         brain_id: str,
         user_openai_api_key: str,
+        user_openai_api_base: str = None,
+        user_openai_gpt_deployment_id: str = None,
+        user_openai_embedding_deployment_id: str = None,
         # TODO: add streaming
     ) -> "OpenAIFunctionsBrainPicking":
         super().__init__(
@@ -54,6 +57,9 @@ class OpenAIFunctionsBrainPicking(BaseBrainPicking):
             chat_id=chat_id,
             max_tokens=max_tokens,
             user_openai_api_key=user_openai_api_key,
+            user_openai_api_base=user_openai_api_base,
+            user_openai_gpt_deployment_id=user_openai_gpt_deployment_id,
+            user_openai_embedding_deployment_id=user_openai_embedding_deployment_id,
             temperature=temperature,
             brain_id=str(brain_id),
             streaming=False,
@@ -61,11 +67,32 @@ class OpenAIFunctionsBrainPicking(BaseBrainPicking):
 
     @property
     def openai_client(self) -> ChatOpenAI:
-        return ChatOpenAI(openai_api_key=self.openai_api_key)
+        # Reference: langchain/chat_models/azure_openai.py
+        # We need use AzureChatOpenAI if we are using Azure Functions
+        if self.openai_api_type == "azure":
+            return AzureChatOpenAI(
+                openai_api_key=self.openai_api_key,
+                # to support Azure OpenAI Service custom endpoints
+                openai_api_base=self.openai_api_base,
+                openai_api_type=self.openai_api_type,
+                openai_api_version="2023-03-15-preview",
+                # to support Azure OpenAI Service custom deployment names
+                deployment_name=self.openai_gpt_deployment_id,
+            )
+        else:
+            return ChatOpenAI(openai_api_key=self.openai_api_key)
 
     @property
     def embeddings(self) -> OpenAIEmbeddings:
-        return OpenAIEmbeddings(openai_api_key=self.openai_api_key)
+        return OpenAIEmbeddings(
+            openai_api_key=self.openai_api_key,
+            # to support Azure OpenAI Service custom endpoints
+            openai_api_base=self.openai_api_base,
+            openai_api_type=self.openai_api_type,
+            openai_api_version="2023-03-15-preview",
+            # to support Azure OpenAI Service custom deployment names
+            deployment=self.openai_embedding_deployment_id,
+        )
 
     @property
     def supabase_client(self) -> Client:
@@ -101,6 +128,10 @@ class OpenAIFunctionsBrainPicking(BaseBrainPicking):
         if functions:
             logger.info("Adding functions to model response")
             kwargs["functions"] = functions
+
+        # Need to add engine for Azure OpenAI Service
+        if self.openai_api_type == "azure":
+            kwargs["engine"] = self.openai_gpt_deployment_id
 
         return self.openai_client.completion_with_retry(**kwargs)
 
