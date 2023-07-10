@@ -88,7 +88,6 @@ def process_batch(batch_ids):
                 "name:metadata->>file_name, size:metadata->>file_size",
                 count="exact",
             )
-            .filter("id", "in", tuple(batch_ids))
             .execute()
         ).data
 

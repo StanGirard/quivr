@@ -4,7 +4,7 @@ from typing import AsyncIterable, Awaitable
 
 from langchain.chains import ConversationalRetrievalChain, LLMChain
 from langchain.chains.question_answering import load_qa_chain
-from langchain.chat_models import ChatOpenAI
+from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.llms.base import LLM
 from logger import get_logger
@@ -41,6 +41,9 @@ class OpenAIBrainPicking(BaseBrainPicking):
         chat_id: str,
         max_tokens: int,
         user_openai_api_key: str,
+        user_openai_api_base: str = None,
+        user_openai_gpt_deployment_id: str = None,
+        user_openai_embedding_deployment_id: str = None,
         streaming: bool = False,
     ) -> "OpenAIBrainPicking":
         """
@@ -54,12 +57,23 @@ class OpenAIBrainPicking(BaseBrainPicking):
             max_tokens=max_tokens,
             temperature=temperature,
             user_openai_api_key=user_openai_api_key,
+            user_openai_api_base=user_openai_api_base,
+            user_openai_gpt_deployment_id=user_openai_gpt_deployment_id,
+            user_openai_embedding_deployment_id=user_openai_embedding_deployment_id,
             streaming=streaming,
         )
 
     @property
     def embeddings(self) -> OpenAIEmbeddings:
-        return OpenAIEmbeddings(openai_api_key=self.openai_api_key)
+        return OpenAIEmbeddings(
+            openai_api_key=self.openai_api_key,
+            # to support Azure OpenAI Service custom endpoints
+            openai_api_base=self.openai_api_base,
+            openai_api_type=self.openai_api_type,
+            openai_api_version="2023-03-15-preview",
+            # to support Azure OpenAI Service custom deployment names
+            deployment=self.openai_embedding_deployment_id,
+        )
 
     @property
     def supabase_client(self) -> Client:
@@ -111,12 +125,26 @@ class OpenAIBrainPicking(BaseBrainPicking):
         :param private: Boolean value to determine if private model is to be used.
         :return: Language model instance
         """
-        return ChatOpenAI(
-            temperature=0,
-            model=model,
-            streaming=streaming,
-            callbacks=callbacks,
-        )
+        if self.openai_api_type == "azure":
+            return AzureChatOpenAI(
+                openai_api_key=self.openai_api_key,
+                # to support Azure OpenAI Service custom endpoints
+                openai_api_base=self.openai_api_base,
+                openai_api_type=self.openai_api_type,
+                openai_api_version="2023-03-15-preview",
+                # to support Azure OpenAI Service custom deployment names
+                deployment_name=self.openai_gpt_deployment_id,
+                temperature=0,
+                streaming=streaming,
+                callbacks=callbacks,
+            )
+        else:
+            return ChatOpenAI(
+                temperature=0,
+                model=model,
+                streaming=streaming,
+                callbacks=callbacks,
+            )
 
     def _call_chain(self, chain, question, history):
         """

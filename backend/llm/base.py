@@ -29,9 +29,16 @@ class BaseBrainPicking(BaseModel):
     brain_id: str = None
     max_tokens: int = 256
     user_openai_api_key: str = None
+    user_openai_api_base: str = None
+    user_openai_gpt_deployment_id: str = None
+    user_openai_embedding_deployment_id: str = None
     streaming: bool = False
 
     openai_api_key: str = None
+    openai_api_base: str = "https://api.openai.com/v1"
+    openai_gpt_deployment_id: str = None
+    openai_embedding_deployment_id: str = None
+    openai_api_type: str = "open_ai"
     callbacks: List[AsyncCallbackHandler] = None
 
     def _determine_api_key(self, openai_api_key, user_openai_api_key):
@@ -65,6 +72,20 @@ class BaseBrainPicking(BaseModel):
 
         self.openai_api_key = self._determine_api_key(
             self.brain_settings.openai_api_key, self.user_openai_api_key
+        )
+        self.openai_api_base = self._determine_api_key(
+            self.brain_settings.openai_api_base, self.user_openai_api_base
+        )
+        self.openai_gpt_deployment_id = self._determine_api_key(
+            self.brain_settings.openai_gpt_deployment_id,
+            self.user_openai_gpt_deployment_id,
+        )
+        self.openai_embedding_deployment_id = self._determine_api_key(
+            self.brain_settings.openai_embedding_deployment_id,
+            self.user_openai_embedding_deployment_id,
+        )
+        self.openai_api_type = (
+            "azure" if self.openai_gpt_deployment_id else self.openai_api_type
         )
         self.streaming = self._determine_streaming(self.model, self.streaming)
         self.callbacks = self._determine_callback_array(self.streaming)
