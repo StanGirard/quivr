@@ -105,25 +105,6 @@ async def get_brain_endpoint(
         return {"error": f"No brain found with brain_id {brain_id}"}
 
 
-# delete one brain
-@brain_router.delete(
-    "/brains/{brain_id}/",
-    dependencies=[Depends(AuthBearer()), Depends(has_brain_authorization())],
-    tags=["Brain"],
-)
-async def delete_brain_endpoint(
-    brain_id: UUID,
-    current_user: User = Depends(get_current_user),
-):
-    """
-    Delete a specific brain by brain ID.
-    """
-    brain = Brain(id=brain_id)
-    brain.delete_brain(current_user.id)
-
-    return {"message": f"{brain_id}  has been deleted."}
-
-
 class BrainObject(BaseModel):
     brain_id: Optional[UUID]
     name: Optional[str] = "New Brain"

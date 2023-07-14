@@ -1,7 +1,6 @@
 import os
 import random
 import string
-import uuid
 
 from fastapi.testclient import TestClient
 from main import app
@@ -72,7 +71,6 @@ def test_retrieve_default_brain():
 
 
 def test_create_brain():
-
     # Generate a random name for the brain
     random_brain_name = "".join(
         random.choices(string.ascii_letters + string.digits, k=10)
@@ -143,7 +141,7 @@ def test_delete_all_brains():
 
         # Send a DELETE request to delete the specific brain
         delete_response = client.delete(
-            f"/brains/{brain_id}/",
+            f"/brain/{brain_id}/subscription",
             headers={"Authorization": "Bearer " + API_KEY},
         )
 
